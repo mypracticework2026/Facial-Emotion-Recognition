@@ -493,10 +493,7 @@ st.markdown("""
 # -----------------------------
 # Hero
 # -----------------------------
-st.markdown(
-    '<div class="eyebrow"><span class="dot"></span> COMPUTER VISION &middot; BIOMETRIC ANALYSIS ENGINE</div>',
-    unsafe_allow_html=True,
-)
+
 st.markdown(
     '''
     <div class="hero-box-wrap">
