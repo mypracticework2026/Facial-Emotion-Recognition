@@ -337,6 +337,8 @@ if uploaded_file is not None:
                         'photo where the face is clearly visible and unobstructed.</div>',
                         unsafe_allow_html=True,
                     )
+                    with st.expander("🛠️ Why wasn't a face detected? (debug info)"):
+                        st.json(result.get("face_debug", {}))
                 else:
                     st.markdown(
                         '<div class="ok-banner">✅ Face detected and cropped '
