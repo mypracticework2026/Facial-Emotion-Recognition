@@ -1,3 +1,4 @@
+import os
 import cv2
 import joblib
 import numpy as np
@@ -6,11 +7,40 @@ from skimage.feature import hog
 MODEL_PATH = "emotion_model.pkl"
 model = joblib.load(MODEL_PATH)
 
-# Haar cascade ships with opencv-python / opencv-python-headless — no
-# extra dependency needed.
-FACE_CASCADE = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-)
+
+def _load_face_cascade():
+    """
+    Locate the bundled Haar cascade XML. Some opencv-python-headless
+    builds (common on Streamlit Cloud) don't expose the `cv2.data`
+    attribute even though the XML files are still shipped inside the
+    package folder, so we try that first and fall back to resolving
+    the package path manually. Returns None (never raises) if it truly
+    can't be found, so the app degrades gracefully instead of crashing
+    on import.
+    """
+    filename = "haarcascade_frontalface_default.xml"
+    candidates = []
+
+    try:
+        candidates.append(os.path.join(cv2.data.haarcascades, filename))
+    except AttributeError:
+        pass
+
+    try:
+        candidates.append(os.path.join(os.path.dirname(cv2.__file__), "data", filename))
+    except Exception:
+        pass
+
+    for path in candidates:
+        if path and os.path.exists(path):
+            cascade = cv2.CascadeClassifier(path)
+            if not cascade.empty():
+                return cascade
+
+    return None
+
+
+FACE_CASCADE = _load_face_cascade()
 
 # Standard FER2013 label order — this is the order the original Kaggle
 # CSV encodes emotions in if your model was trained on the raw integer
@@ -40,6 +70,9 @@ def detect_and_crop_face(image_bgr):
     returns the original image unchanged and face_found=False so the
     UI can warn the user that accuracy may suffer.
     """
+    if FACE_CASCADE is None:
+        return image_bgr, False
+
     gray_full = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
     faces = FACE_CASCADE.detectMultiScale(
         gray_full, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60)
