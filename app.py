@@ -109,7 +109,7 @@ st.markdown("""
         gap: 8px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
-        font-weight: 300;
+        font-weight: 100;
         letter-spacing: 2.5px;
         text-transform: uppercase;
         color: #E8B84B;
