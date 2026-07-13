@@ -123,59 +123,28 @@ st.markdown("""
         box-shadow: 0 0 8px 2px rgba(232, 184, 75, 0.6);
     }
 
-    /* ---------- NEW: Glossy border around the title ---------- */
-    .hero-box {
-        display: inline-block;                /* shrink-wrap to content */
-        padding: 0.3rem 1.8rem;               /* space inside the border */
-        border: 2px solid transparent;        /* base for gradient border */
-        border-image: linear-gradient(135deg, #FFD166, #FF9A56, #FF6B6B, #B78CFF, #5EC8E8, #2DD4BF) 1;
-        border-image-slice: 1;
-        border-radius: 0;                     /* keep sharp corners for gradient border */
-        background: rgba(10, 10, 13, 0.0);    /* fully transparent background */
-        box-shadow: 0 0 30px -10px rgba(232, 184, 75, 0.3);  /* soft glow */
-        margin: 0 auto;                       /* center */
-        margin-bottom: 0.8rem;                /* space below */
-        position: relative;
-        /* Glossy shine effect via a pseudo-element */
-        overflow: hidden;                     /* keeps pseudo inside */
-    }
-
-    .hero-box::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 60%);
-        pointer-events: none;
-        animation: shine 6s ease-in-out infinite;
-    }
-
-    @keyframes shine {
-        0% { transform: rotate(0deg) scale(1.2); opacity: 0.3; }
-        50% { transform: rotate(10deg) scale(1.5); opacity: 0.6; }
-        100% { transform: rotate(0deg) scale(1.2); opacity: 0.3; }
-    }
-
     .hero-title {
         text-align: center;
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 5.4rem;                  /* much bigger */
+        font-size: 4.4rem;
         font-weight: 700;
         letter-spacing: -1.5px;
         color: #F3F4F8;
-        line-height: 1.1;
-        margin: 0;
-        position: relative;                 /* stack above pseudo */
-        z-index: 1;
+        margin-bottom: 0.6rem;
+        line-height: 1.05;
     }
     @media (max-width: 640px) {
-        .hero-title { font-size: 3.0rem; }
-        .hero-box { padding: 0.2rem 1.2rem; }
+        .hero-title { font-size: 2.6rem; }
     }
 
-    /* ---------- Removed hero-subtitle entirely ---------- */
+    .hero-subtitle {
+        text-align: center;
+        color: #8B90A3;
+        font-size: 1.05rem;
+        max-width: 560px;
+        margin: 0 auto 1.6rem auto;
+        line-height: 1.5;
+    }
 
     .scan-line {
         width: 100%;
@@ -479,18 +448,60 @@ st.markdown(
     '<div class="eyebrow"><span class="dot"></span> COMPUTER VISION &middot; BIOMETRIC ANALYSIS ENGINE</div>',
     unsafe_allow_html=True,
 )
+st.markdown('<p class="hero-title">Facial Emotion Detector</p>', unsafe_allow_html=True)
+st.markdown(
+    '<p class="hero-subtitle">Upload a photo and the engine locates the face, '
+    'extracts HOG gradient features, and classifies the expression across '
+    'seven emotional states in real time.</p>',
+    unsafe_allow_html=True,
+)
 
-# ---- NEW: Glossy bordered heading ----
 st.markdown(
     '''
-    <div class="hero-box">
-        <p class="hero-title">Facial Emotion Detector</p>
+    <div class="emo-strip">
+        <div class="emo-card" style="--accent:#FF6B5B;">
+            <span class="emo-emoji">😠</span>
+            <span class="emo-label">Angry</span>
+        </div>
+        <div class="emo-card" style="--accent:#7FD858;">
+            <span class="emo-emoji">🤢</span>
+            <span class="emo-label">Disgust</span>
+        </div>
+        <div class="emo-card" style="--accent:#B78CFF;">
+            <span class="emo-emoji">😨</span>
+            <span class="emo-label">Fear</span>
+        </div>
+        <div class="emo-card emo-featured" style="--accent:#FFD166;">
+            <div class="scan-frame">
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+                <span class="landmark" style="top:22%; left:30%;"></span>
+                <span class="landmark" style="top:22%; left:70%;"></span>
+                <span class="landmark" style="top:55%; left:50%;"></span>
+                <span class="landmark" style="top:78%; left:35%;"></span>
+                <span class="landmark" style="top:78%; left:65%;"></span>
+                <span class="emo-emoji">😊</span>
+            </div>
+            <span class="emo-label">Happy</span>
+        </div>
+        <div class="emo-card" style="--accent:#5EC8E8;">
+            <span class="emo-emoji">😢</span>
+            <span class="emo-label">Sad</span>
+        </div>
+        <div class="emo-card" style="--accent:#FF7FC0;">
+            <span class="emo-emoji">😲</span>
+            <span class="emo-label">Surprise</span>
+        </div>
+        <div class="emo-card" style="--accent:#9AA1B5;">
+            <span class="emo-emoji">😐</span>
+            <span class="emo-label">Neutral</span>
+        </div>
     </div>
     ''',
     unsafe_allow_html=True,
 )
-
-# ---- Subtitle removed ----
 
 st.markdown('<div class="scan-line"></div>', unsafe_allow_html=True)
 
