@@ -109,7 +109,7 @@ st.markdown("""
         gap: 8px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
-        font-weight: 100;
+        font-weight: 500;
         letter-spacing: 2.5px;
         text-transform: uppercase;
         color: #E8B84B;
@@ -153,8 +153,8 @@ st.markdown("""
 
     .hero-box-inner {
         background: #0A0A0D;
-        border-radius: 18px;
-        padding: 2.4rem 4.5rem;
+        border-radius: 16px;
+        padding: 2.0rem 3.5rem;
         text-align: center;
         display: inline-block;
     }
