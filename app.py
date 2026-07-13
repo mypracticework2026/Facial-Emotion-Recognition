@@ -89,8 +89,8 @@ st.markdown("""
     }
 
     .block-container {
-        padding-top: 2.2rem;
-        max-width: 1080px;
+        padding-top: 5rem;
+        max-width: 1180px;
     }
 
     section[data-testid="stSidebar"] {
@@ -153,7 +153,7 @@ st.markdown("""
 
     .hero-box-inner {
         background: #0A0A0D;
-        border-radius: 16px;
+        border-radius: 18px;
         padding: 2.4rem 4.5rem;
         text-align: center;
         display: inline-block;
@@ -169,8 +169,8 @@ st.markdown("""
     .hero-box-inner p.hero-title,
     div[data-testid="stMarkdownContainer"] p.hero-title {
         font-family: 'Space Grotesk', sans-serif !important;
-        font-size: 4.5rem !important;
-        font-weight: 400 !important;
+        font-size: 3.4rem !important;
+        font-weight: 700 !important;
         letter-spacing: -2px !important;
         color: #FAFAFC !important;
         line-height: 1.02 !important;
@@ -180,7 +180,7 @@ st.markdown("""
     @media (max-width: 900px) {
         .hero-box-inner p.hero-title,
         div[data-testid="stMarkdownContainer"] p.hero-title {
-            font-size: 2.8rem !important;
+            font-size: 2rem !important;
             white-space: normal;
         }
         .hero-box-inner { padding: 1.4rem 1.6rem; }
@@ -493,7 +493,10 @@ st.markdown("""
 # -----------------------------
 # Hero
 # -----------------------------
-
+st.markdown(
+    '<div class="eyebrow"><span class="dot"></span> COMPUTER VISION &middot; BIOMETRIC ANALYSIS ENGINE</div>',
+    unsafe_allow_html=True,
+)
 st.markdown(
     '''
     <div class="hero-box-wrap">
