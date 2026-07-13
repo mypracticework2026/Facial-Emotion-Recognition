@@ -1,0 +1,99 @@
+import cv2
+import joblib
+import numpy as np
+from skimage.feature import hog
+
+MODEL_PATH = "emotion_model.pkl"
+model = joblib.load(MODEL_PATH)
+
+# Standard FER2013 label order — this is the order the original Kaggle
+# CSV encodes emotions in if your model was trained on the raw integer
+# 'emotion' column (0-6). If your model was trained on string labels
+# instead, this file handles that automatically too.
+EMOTION_LABELS = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
+
+EMOJI_MAP = {
+    "Angry": "😠",
+    "Disgust": "🤢",
+    "Fear": "😨",
+    "Happy": "😊",
+    "Sad": "😢",
+    "Surprise": "😲",
+    "Neutral": "😐",
+}
+
+
+def _extract_features(image_bgr):
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    gray = cv2.resize(gray, (48, 48))
+    gray = cv2.equalizeHist(gray)  # improves contrast on real-world photos
+
+    features = hog(
+        gray,
+        orientations=9,
+        pixels_per_cell=(8, 8),
+        cells_per_block=(2, 2),
+        visualize=False,
+    )
+    return np.array(features).reshape(1, -1)
+
+
+def _label_to_name(raw_label):
+    """Normalize whatever the model outputs (int class index OR string
+    label) into one of our canonical emotion names."""
+    if isinstance(raw_label, (str, np.str_)):
+        name = str(raw_label).strip().lower()
+        for lbl in EMOTION_LABELS:
+            if lbl.lower() == name:
+                return lbl
+        return name.capitalize()
+
+    idx = int(raw_label)
+    if 0 <= idx < len(EMOTION_LABELS):
+        return EMOTION_LABELS[idx]
+    return f"Class {idx}"
+
+
+def _get_confidence_scores(features):
+    """Best-effort per-emotion confidence. Returns None if the model
+    exposes neither predict_proba nor decision_function."""
+    class_labels = [_label_to_name(c) for c in model.classes_]
+
+    if hasattr(model, "predict_proba"):
+        try:
+            probs = model.predict_proba(features)[0]
+            return dict(zip(class_labels, probs))
+        except Exception:
+            pass
+
+    if hasattr(model, "decision_function"):
+        try:
+            scores = np.atleast_1d(model.decision_function(features)[0])
+            exp = np.exp(scores - np.max(scores))
+            probs = exp / exp.sum()
+            return dict(zip(class_labels, probs))
+        except Exception:
+            pass
+
+    return None
+
+
+def predict_emotion(image_bgr):
+    """
+    Takes a BGR numpy image, returns:
+        {
+            "emotion": "Happy",
+            "emoji": "😊",
+            "scores": {"Angry": 0.03, "Happy": 0.61, ...} or None
+        }
+    """
+    features = _extract_features(image_bgr)
+    raw_pred = model.predict(features)[0]
+    emotion = _label_to_name(raw_pred)
+    scores = _get_confidence_scores(features)
+
+    return {
+        "emotion": emotion,
+        "emoji": EMOJI_MAP.get(emotion, "🙂"),
+        "scores": scores,
+    }
