@@ -8,39 +8,43 @@ MODEL_PATH = "emotion_model.pkl"
 model = joblib.load(MODEL_PATH)
 
 
-def _load_face_cascade():
+def _load_face_cascades():
     """
-    Locate the bundled Haar cascade XML. Some opencv-python-headless
-    builds (common on Streamlit Cloud) don't expose the `cv2.data`
-    attribute even though the XML files are still shipped inside the
-    package folder, so we try that first and fall back to resolving
-    the package path manually. Returns None (never raises) if it truly
-    can't be found, so the app degrades gracefully instead of crashing
-    on import.
+    Loads every Haar cascade variant we can find (default + alt + alt2).
+    Different variants catch different faces — trying several drastically
+    improves real-world hit rate compared to relying on just one.
+    Returns a list of successfully-loaded CascadeClassifier objects
+    (possibly empty, never raises).
     """
-    filename = "haarcascade_frontalface_default.xml"
-    candidates = []
+    filenames = [
+        "haarcascade_frontalface_default.xml",
+        "haarcascade_frontalface_alt2.xml",
+        "haarcascade_frontalface_alt.xml",
+    ]
 
+    base_dirs = []
     try:
-        candidates.append(os.path.join(cv2.data.haarcascades, filename))
+        base_dirs.append(cv2.data.haarcascades)
     except AttributeError:
         pass
-
     try:
-        candidates.append(os.path.join(os.path.dirname(cv2.__file__), "data", filename))
+        base_dirs.append(os.path.join(os.path.dirname(cv2.__file__), "data"))
     except Exception:
         pass
 
-    for path in candidates:
-        if path and os.path.exists(path):
-            cascade = cv2.CascadeClassifier(path)
-            if not cascade.empty():
-                return cascade
+    cascades = []
+    for filename in filenames:
+        for base in base_dirs:
+            path = os.path.join(base, filename)
+            if os.path.exists(path):
+                cascade = cv2.CascadeClassifier(path)
+                if not cascade.empty():
+                    cascades.append(cascade)
+                break  # found this variant, move to next filename
+    return cascades
 
-    return None
 
-
-FACE_CASCADE = _load_face_cascade()
+FACE_CASCADES = _load_face_cascades()
 
 # Standard FER2013 label order — this is the order the original Kaggle
 # CSV encodes emotions in if your model was trained on the raw integer
@@ -66,25 +70,55 @@ def detect_and_crop_face(image_bgr):
     a tight, face-only crop rather than a full photo with background,
     shoulders, etc.
 
-    Returns (cropped_bgr, face_found: bool). If no face is detected,
-    returns the original image unchanged and face_found=False so the
-    UI can warn the user that accuracy may suffer.
+    Tries every loaded cascade variant at a couple of sensitivity
+    levels before giving up, since a single cascade + single parameter
+    set misses a surprising number of real-world photos.
+
+    Returns (cropped_bgr, face_found: bool, debug: dict).
     """
-    if FACE_CASCADE is None:
-        return image_bgr, False
+    debug = {
+        "cascades_loaded": len(FACE_CASCADES),
+        "image_shape": image_bgr.shape,
+        "attempts": [],
+    }
+
+    if not FACE_CASCADES:
+        debug["reason"] = "No Haar cascades could be loaded on this environment."
+        return image_bgr, False, debug
 
     gray_full = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
-    faces = FACE_CASCADE.detectMultiScale(
-        gray_full, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60)
-    )
+    gray_eq = cv2.equalizeHist(gray_full)
 
-    if len(faces) == 0:
-        return image_bgr, False
+    # (image used, minNeighbors, minSize) — from strict to lenient
+    param_sets = [
+        (gray_eq, 5, (60, 60)),
+        (gray_eq, 3, (40, 40)),
+        (gray_full, 3, (40, 40)),
+        (gray_eq, 2, (30, 30)),
+    ]
 
-    # Use the largest detected face (most likely the main subject)
-    x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
+    best_face = None
+    for cascade in FACE_CASCADES:
+        for img, min_neighbors, min_size in param_sets:
+            faces = cascade.detectMultiScale(
+                img, scaleFactor=1.1, minNeighbors=min_neighbors, minSize=min_size
+            )
+            debug["attempts"].append(
+                {"min_neighbors": min_neighbors, "min_size": min_size, "found": len(faces)}
+            )
+            if len(faces) > 0:
+                candidate = max(faces, key=lambda f: f[2] * f[3])
+                if best_face is None or candidate[2] * candidate[3] > best_face[2] * best_face[3]:
+                    best_face = candidate
+        if best_face is not None:
+            break  # this cascade found something, no need to try the rest
 
-    margin = int(0.2 * w)
+    if best_face is None:
+        debug["reason"] = "No face matched by any cascade/parameter combination."
+        return image_bgr, False, debug
+
+    x, y, w, h = best_face
+    margin = int(0.25 * w)
     h_img, w_img = image_bgr.shape[:2]
     x0 = max(0, x - margin)
     y0 = max(0, y - margin)
@@ -92,7 +126,8 @@ def detect_and_crop_face(image_bgr):
     y1 = min(h_img, y + h + margin)
 
     cropped = image_bgr[y0:y1, x0:x1]
-    return cropped, True
+    debug["chosen_box"] = [int(x), int(y), int(w), int(h)]
+    return cropped, True, debug
 
 
 def _extract_features(face_bgr):
@@ -159,9 +194,10 @@ def predict_emotion(image_bgr):
             "scores": {"Angry": 0.03, "Happy": 0.61, ...} or None,
             "face_crop_bgr": <the exact crop the model scored>,
             "face_found": True/False,
+            "face_debug": {...diagnostic info...},
         }
     """
-    face_crop, face_found = detect_and_crop_face(image_bgr)
+    face_crop, face_found, face_debug = detect_and_crop_face(image_bgr)
 
     features = _extract_features(face_crop)
     raw_pred = model.predict(features)[0]
@@ -174,4 +210,5 @@ def predict_emotion(image_bgr):
         "scores": scores,
         "face_crop_bgr": face_crop,
         "face_found": face_found,
+        "face_debug": face_debug,
     }
