@@ -90,7 +90,7 @@ st.markdown("""
 
     .block-container {
         padding-top: 2.2rem;
-        max-width: 900px;
+        max-width: 1080px;
     }
 
     section[data-testid="stSidebar"] {
@@ -109,7 +109,7 @@ st.markdown("""
         gap: 8px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
-        font-weight: 500;
+        font-weight: 300;
         letter-spacing: 2.5px;
         text-transform: uppercase;
         color: #E8B84B;
