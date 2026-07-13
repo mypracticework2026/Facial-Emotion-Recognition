@@ -169,8 +169,8 @@ st.markdown("""
     .hero-box-inner p.hero-title,
     div[data-testid="stMarkdownContainer"] p.hero-title {
         font-family: 'Space Grotesk', sans-serif !important;
-        font-size: 6rem !important;
-        font-weight: 500 !important;
+        font-size: 4.5rem !important;
+        font-weight: 400 !important;
         letter-spacing: -2px !important;
         color: #FAFAFC !important;
         line-height: 1.02 !important;
