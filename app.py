@@ -45,9 +45,7 @@ def safe_image(img, **kwargs):
 # -----------------------------
 st.markdown("""
 <style>
-    #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
 
     .stApp {
         background: #F6F7FB;
