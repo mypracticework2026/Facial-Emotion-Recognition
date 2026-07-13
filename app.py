@@ -154,7 +154,7 @@ st.markdown("""
     .hero-box-inner {
         background: #0A0A0D;
         border-radius: 16px;
-        padding: 2.0rem 3.5rem;
+        padding: 2.4rem 4.5rem;
         text-align: center;
         display: inline-block;
     }
