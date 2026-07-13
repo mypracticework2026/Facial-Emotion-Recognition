@@ -1,0 +1,117 @@
+import streamlit as st
+import cv2
+import numpy as np
+from PIL import Image
+from predict import predict_emotion
+
+# -----------------------------
+# Page Configuration
+# -----------------------------
+st.set_page_config(
+    page_title="Facial Emotion Recognition",
+    page_icon="😊",
+    layout="wide"
+)
+
+# -----------------------------
+# Custom CSS
+# -----------------------------
+st.markdown("""
+<style>
+
+.main{
+    background-color:#0E1117;
+}
+
+.title{
+    text-align:center;
+    font-size:42px;
+    color:white;
+    font-weight:bold;
+}
+
+.subtitle{
+    text-align:center;
+    color:#A0A0A0;
+    font-size:18px;
+}
+
+.result{
+    text-align:center;
+    font-size:35px;
+    font-weight:bold;
+    color:#00E676;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# -----------------------------
+# Title
+# -----------------------------
+st.markdown('<p class="title">😊 Facial Emotion Recognition AI</p>', unsafe_allow_html=True)
+
+st.markdown('<p class="subtitle">Powered by Machine Learning (HOG + Linear SVM)</p>', unsafe_allow_html=True)
+
+st.write("")
+
+# -----------------------------
+# Sidebar
+# -----------------------------
+st.sidebar.title("📊 Model Information")
+
+st.sidebar.success("Algorithm : Linear SVM")
+
+st.sidebar.success("Feature Extraction : HOG")
+
+st.sidebar.success("Dataset : FER2013")
+
+st.sidebar.success("Accuracy : 43%")
+
+st.sidebar.write("---")
+
+st.sidebar.info("Built using Python, OpenCV, Scikit-Learn and Streamlit.")
+
+# -----------------------------
+# Upload
+# -----------------------------
+uploaded_file = st.file_uploader(
+    "📤 Upload a Face Image",
+    type=["jpg","jpeg","png"]
+)
+
+if uploaded_file is not None:
+
+    image = Image.open(uploaded_file)
+
+    st.image(
+        image,
+        caption="Uploaded Image",
+        use_container_width=True
+    )
+
+    image_np = np.array(image)
+
+    if image_np.shape[-1] == 4:
+        image_np = cv2.cvtColor(image_np, cv2.COLOR_RGBA2BGR)
+    else:
+        image_np = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+
+    prediction = predict_emotion(image_np)
+
+    emoji = {
+        "happy":"😊",
+        "sad":"😢",
+        "angry":"😠",
+        "fear":"😨",
+        "surprise":"😲",
+        "neutral":"😐",
+        "disgust":"🤢"
+    }
+
+    st.write("")
+
+    st.markdown(
+        f'<p class="result">{emoji.get(prediction,"🙂")} {prediction.upper()}</p>',
+        unsafe_allow_html=True
+    )
