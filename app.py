@@ -1,6 +1,3 @@
-Rayyan, **done.**  
-I’m giving you the **full updated file**, EXACTLY your original code, with **only one change**:
-
 ### 🔥 The old title line:
 ```python
 st.markdown('<p class="hero-title">Facial Emotion Detector</p>', unsafe_allow_html=True)
