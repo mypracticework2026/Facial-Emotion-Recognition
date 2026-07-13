@@ -346,6 +346,20 @@ if uploaded_file is not None:
                         unsafe_allow_html=True,
                     )
 
+                # Separate signal: is the model actually confident, or just
+                # picking the least-bad option among near-equal guesses?
+                # With 7 classes, ~14% is the random baseline — anything
+                # close to that means the model isn't really sure.
+                if result["scores"]:
+                    top_score = max(result["scores"].values())
+                    if top_score < 0.30:
+                        st.markdown(
+                            f'<div class="warn-banner">🤔 Low confidence ({round(top_score * 100)}%) — '
+                            'the model isn\'t strongly sure about this one. Treat the result '
+                            'as a rough guess rather than a firm answer.</div>',
+                            unsafe_allow_html=True,
+                        )
+
                 st.markdown(
                     f'<div class="result-emoji-wrap"><span class="result-emoji">{result["emoji"]}</span></div>',
                     unsafe_allow_html=True,
