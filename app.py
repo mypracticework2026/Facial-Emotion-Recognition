@@ -1,20 +1,3 @@
-Rayyan, **done.**  
-I’m giving you the **full updated file**, EXACTLY your original code, with **only one change**:
-
-### 🔥 The old title line:
-```python
-st.markdown('<p class="hero-title">Facial Emotion Detector</p>', unsafe_allow_html=True)
-```
-
-is replaced with your **new colorful rectangle heading**.
-
-Everything else — CSS, sidebar, uploader, animations, layout — is **100% identical** to your original file.
-
----
-
-# ⭐ **FULL UPDATED `app.py` — COPY & PASTE**
-
-```python
 import streamlit as st
 import cv2
 import numpy as np
@@ -465,45 +448,7 @@ st.markdown(
     '<div class="eyebrow"><span class="dot"></span> COMPUTER VISION &middot; BIOMETRIC ANALYSIS ENGINE</div>',
     unsafe_allow_html=True,
 )
-
-# -----------------------------
-# NEW TITLE BLOCK (Option A)
-# -----------------------------
-st.markdown(
-    """
-    <div style="
-        display:flex;
-        justify-content:center;
-        margin-top:5px;
-        margin-bottom:10px;
-    ">
-        <div style="
-            padding: 22px 40px;
-            border-radius: 18px;
-            border: 3px solid;
-            border-image: linear-gradient(90deg, #FFD166, #2DD4BF, #B78CFF) 1;
-            box-shadow: 0 0 22px rgba(255, 209, 102, 0.25);
-            text-align:center;
-        ">
-            <h1 style="
-                font-family: 'Space Grotesk', sans-serif;
-                font-size: 5rem;
-                font-weight: 700;
-                letter-spacing: -1px;
-                margin: 0;
-                color: #F3F4F8;
-            ">
-                Facial Emotion Detector
-            </h1>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# -----------------------------
-# Subtitle
-# -----------------------------
+st.markdown('<p class="hero-title">Facial Emotion Detector</p>', unsafe_allow_html=True)
 st.markdown(
     '<p class="hero-subtitle">Upload a photo and the engine locates the face, '
     'extracts HOG gradient features, and classifies the expression across '
@@ -511,9 +456,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# -----------------------------
-# Animated Emotion Strip
-# -----------------------------
 st.markdown(
     '''
     <div class="emo-strip">
@@ -522,3 +464,220 @@ st.markdown(
             <span class="emo-label">Angry</span>
         </div>
         <div class="emo-card" style="--accent:#7FD858;">
+            <span class="emo-emoji">🤢</span>
+            <span class="emo-label">Disgust</span>
+        </div>
+        <div class="emo-card" style="--accent:#B78CFF;">
+            <span class="emo-emoji">😨</span>
+            <span class="emo-label">Fear</span>
+        </div>
+        <div class="emo-card emo-featured" style="--accent:#FFD166;">
+            <div class="scan-frame">
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+                <span class="landmark" style="top:22%; left:30%;"></span>
+                <span class="landmark" style="top:22%; left:70%;"></span>
+                <span class="landmark" style="top:55%; left:50%;"></span>
+                <span class="landmark" style="top:78%; left:35%;"></span>
+                <span class="landmark" style="top:78%; left:65%;"></span>
+                <span class="emo-emoji">😊</span>
+            </div>
+            <span class="emo-label">Happy</span>
+        </div>
+        <div class="emo-card" style="--accent:#5EC8E8;">
+            <span class="emo-emoji">😢</span>
+            <span class="emo-label">Sad</span>
+        </div>
+        <div class="emo-card" style="--accent:#FF7FC0;">
+            <span class="emo-emoji">😲</span>
+            <span class="emo-label">Surprise</span>
+        </div>
+        <div class="emo-card" style="--accent:#9AA1B5;">
+            <span class="emo-emoji">😐</span>
+            <span class="emo-label">Neutral</span>
+        </div>
+    </div>
+    ''',
+    unsafe_allow_html=True,
+)
+
+st.markdown('<div class="scan-line"></div>', unsafe_allow_html=True)
+
+# -----------------------------
+# Sidebar — spec sheet style
+# -----------------------------
+with st.sidebar:
+    st.markdown('<p class="spec-title">◆ Model Specification</p>', unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="spec-row" style="--accent:#E8B84B;"><div class="label">Algorithm</div>'
+        '<div class="value">Linear SVM</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="spec-row" style="--accent:#2DD4BF;"><div class="label">Feature Extraction</div>'
+        '<div class="value">HOG (Histogram of Oriented Gradients)</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="spec-row" style="--accent:#B78CFF;"><div class="label">Dataset</div>'
+        '<div class="value">FER2013</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="spec-row" style="--accent:#9AA1B5;"><div class="label">Accuracy</div>'
+        '<div class="value">~43% &middot; 7-class</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<div style='height:0.6rem'></div>", unsafe_allow_html=True)
+    st.markdown(
+        '<div class="note-box">FER2013 is a genuinely hard benchmark — even '
+        'human raters agree on labels only ~65-70% of the time. This classical '
+        'HOG + linear SVM pipeline is a lightweight baseline, not a CNN, so '
+        'treat results as indicative rather than exact.</div>',
+        unsafe_allow_html=True,
+    )
+
+# -----------------------------
+# Upload + Layout
+# -----------------------------
+uploaded_file = st.file_uploader(
+    "Upload a face image — JPG or PNG",
+    type=["jpg", "jpeg", "png"],
+)
+
+col_img, col_result = st.columns([1, 1], gap="large")
+result = None
+
+if uploaded_file is not None:
+    # --- Step 1: read + display the uploaded image ---
+    try:
+        pil_image = Image.open(uploaded_file).convert("RGB")
+        image_np = np.array(pil_image)
+        image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+
+        with col_img:
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            st.markdown('<p class="card-heading">Input Image</p>', unsafe_allow_html=True)
+            safe_image(pil_image)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        read_ok = True
+    except Exception as e:
+        read_ok = False
+        with col_img:
+            st.error("Couldn't read this image file. Please try a different one.")
+            with st.expander("Technical details"):
+                st.code(str(e))
+
+    # --- Step 2: run prediction (isolated so it can't take down the page) ---
+    if read_ok:
+        with col_result:
+            with st.spinner("Analyzing facial expression..."):
+                try:
+                    result = predict_emotion(image_bgr)
+                except Exception as e:
+                    result = None
+                    st.error(
+                        "Couldn't analyze this image. Try a clearer, "
+                        "front-facing photo with the face visible."
+                    )
+                    with st.expander("Technical details"):
+                        st.code(str(e))
+
+            if result:
+                c1, c2 = EMOTION_COLORS.get(result["emotion"], DEFAULT_COLOR)
+
+                st.markdown('<div class="panel">', unsafe_allow_html=True)
+                st.markdown('<p class="card-heading">Analysis Result</p>', unsafe_allow_html=True)
+
+                if not result["face_found"]:
+                    st.markdown(
+                        '<div class="warn-banner">⚠ No face clearly detected — '
+                        'scored the full image. For best accuracy, upload a '
+                        'photo where the face is clearly visible and unobstructed.</div>',
+                        unsafe_allow_html=True,
+                    )
+                    with st.expander("Why wasn't a face detected? (debug info)"):
+                        st.json(result.get("face_debug", {}))
+                else:
+                    st.markdown(
+                        '<div class="ok-banner">✓ Face detected and cropped '
+                        'automatically before scoring.</div>',
+                        unsafe_allow_html=True,
+                    )
+
+                # Confidence-based trust signal, separate from detection status
+                if result["scores"]:
+                    top_score = max(result["scores"].values())
+                    if top_score < 0.30:
+                        st.markdown(
+                            f'<div class="warn-banner">◐ Low confidence ({round(top_score * 100)}%) — '
+                            'the model isn\'t strongly sure about this one. Treat the result '
+                            'as a rough guess rather than a firm answer.</div>',
+                            unsafe_allow_html=True,
+                        )
+
+                st.markdown(
+                    f'<div class="result-emoji-wrap"><span class="result-emoji">{result["emoji"]}</span></div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    f'<p class="result-label" style="color:{c1};">{result["emotion"].upper()}</p>',
+                    unsafe_allow_html=True,
+                )
+
+                if result["scores"]:
+                    sorted_scores = sorted(
+                        result["scores"].items(), key=lambda x: x[1], reverse=True
+                    )
+                    for label, score in sorted_scores:
+                        pct = max(0, min(100, round(float(score) * 100)))
+                        bc1, bc2 = EMOTION_COLORS.get(label, DEFAULT_COLOR)
+                        st.markdown(
+                            f'''
+                            <div class="score-row">
+                                <div class="score-label">{label}</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="width:{pct}%; background:linear-gradient(90deg, {bc2}, {bc1});"></div>
+                                </div>
+                                <div class="score-pct">{pct}%</div>
+                            </div>
+                            ''',
+                            unsafe_allow_html=True,
+                        )
+                else:
+                    st.caption("Confidence breakdown unavailable for this model type.")
+
+                st.markdown('</div>', unsafe_allow_html=True)
+
+        # --- Step 3: optional debug preview, fully isolated ---
+        if result and result.get("face_crop_bgr") is not None:
+            try:
+                crop = result["face_crop_bgr"]
+                if crop.size > 0:
+                    crop_rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+                    with st.expander("See exactly what the model scored (the cropped input)"):
+                        st.image(crop_rgb, width=200)
+                        st.markdown(
+                            '<p class="crop-caption">This is the crop — not the full '
+                            'photo — that was fed into the model.</p>',
+                            unsafe_allow_html=True,
+                        )
+            except Exception:
+                pass  # purely cosmetic; never let this break the page
+
+else:
+    with col_img:
+        st.markdown(
+            '<div class="placeholder-box">Your uploaded photo will appear here</div>',
+            unsafe_allow_html=True,
+        )
+    with col_result:
+        st.markdown(
+            '<div class="placeholder-box">Prediction and confidence scores will appear here</div>',
+            unsafe_allow_html=True,
+        )
