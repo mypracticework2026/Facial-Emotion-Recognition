@@ -54,6 +54,10 @@ st.markdown("""
         font-family: 'Inter', -apple-system, sans-serif;
     }
 
+    html, body {
+        background: #0A0A0D !important;
+    }
+
     .stApp {
         background: #0A0A0D;
         background-image:
@@ -61,6 +65,28 @@ st.markdown("""
             radial-gradient(circle at 95% 15%, rgba(45, 212, 191, 0.05) 0%, transparent 40%);
     }
 
+    /* Kill every flavor of Streamlit's default white header/toolbar chrome */
+    header[data-testid="stHeader"],
+    div[data-testid="stToolbar"],
+    div[data-testid="stDecoration"],
+    div[data-testid="stStatusWidget"],
+    .stApp > header {
+        background: #0A0A0D !important;
+        background-image: none !important;
+    }
+
+    header[data-testid="stHeader"] * {
+        background: transparent !important;
+    }
+
+    header[data-testid="stHeader"] svg {
+        fill: #C4C7D4 !important;
+    }
+
+    div[data-testid="stDecoration"] {
+        background: linear-gradient(90deg, #E8B84B, #2DD4BF) !important;
+        height: 2px !important;
+    }
 
     .block-container {
         padding-top: 2.2rem;
@@ -100,12 +126,15 @@ st.markdown("""
     .hero-title {
         text-align: center;
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 3.1rem;
+        font-size: 4.4rem;
         font-weight: 700;
-        letter-spacing: -0.5px;
+        letter-spacing: -1.5px;
         color: #F3F4F8;
-        margin-bottom: 0.5rem;
-        line-height: 1.1;
+        margin-bottom: 0.6rem;
+        line-height: 1.05;
+    }
+    @media (max-width: 640px) {
+        .hero-title { font-size: 2.6rem; }
     }
 
     .hero-subtitle {
@@ -121,7 +150,7 @@ st.markdown("""
         width: 100%;
         max-width: 340px;
         height: 2px;
-        margin: 0 auto 2.4rem auto;
+        margin: 0 auto 2rem auto;
         background: linear-gradient(90deg, transparent, #E8B84B, #2DD4BF, transparent);
         background-size: 200% 100%;
         animation: scan 5s linear infinite;
@@ -129,6 +158,112 @@ st.markdown("""
     }
     @keyframes scan {
         to { background-position: -200% 0; }
+    }
+
+    /* ---------- Animated emotion face-strip ---------- */
+    .emo-strip {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin: 0.5rem auto 2.4rem auto;
+        max-width: 760px;
+    }
+
+    .emo-card {
+        background: #131318;
+        border: 1px solid #22222B;
+        border-radius: 14px;
+        padding: 1rem 0.7rem 0.85rem 0.7rem;
+        width: 84px;
+        text-align: center;
+        cursor: default;
+        transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+
+    .emo-card:hover {
+        transform: translateY(-8px) scale(1.1);
+        border-color: var(--accent, #E8B84B);
+        box-shadow: 0 10px 26px -8px var(--accent, #E8B84B);
+        z-index: 2;
+    }
+
+    .emo-emoji {
+        font-size: 2rem;
+        display: block;
+        transition: transform 0.35s ease;
+    }
+
+    .emo-card:hover .emo-emoji {
+        animation: wiggle 0.55s ease;
+    }
+
+    @keyframes wiggle {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        25%      { transform: rotate(-14deg) scale(1.15); }
+        75%      { transform: rotate(14deg) scale(1.15); }
+    }
+
+    .emo-label {
+        display: block;
+        margin-top: 0.55rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6rem;
+        font-weight: 500;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+        color: #6C7189;
+    }
+
+    /* Spotlighted card — the "actively scanned" face */
+    .emo-featured {
+        width: 108px;
+        padding-top: 1.2rem;
+        padding-bottom: 1rem;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent) inset, 0 0 28px -10px var(--accent);
+        animation: float 3.2s ease-in-out infinite;
+    }
+    .emo-featured .emo-emoji {
+        font-size: 2.6rem;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-6px); }
+    }
+
+    .scan-frame {
+        position: relative;
+        width: 100%;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .scan-frame .corner {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border: 2px solid var(--accent);
+        opacity: 0.9;
+        animation: pulse 2s ease-in-out infinite;
+    }
+    .corner.tl { top: -8px;    left: -8px;   border-right: none;  border-bottom: none; }
+    .corner.tr { top: -8px;    right: -8px;  border-left: none;   border-bottom: none; }
+    .corner.bl { bottom: -8px; left: -8px;   border-right: none;  border-top: none; }
+    .corner.br { bottom: -8px; right: -8px;  border-left: none;   border-top: none; }
+    @keyframes pulse {
+        0%, 100% { opacity: 0.4; }
+        50%      { opacity: 1; }
+    }
+    .landmark {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 5px var(--accent);
     }
 
     /* ---------- Cards ---------- */
@@ -320,6 +455,54 @@ st.markdown(
     'seven emotional states in real time.</p>',
     unsafe_allow_html=True,
 )
+
+st.markdown(
+    '''
+    <div class="emo-strip">
+        <div class="emo-card" style="--accent:#FF6B5B;">
+            <span class="emo-emoji">😠</span>
+            <span class="emo-label">Angry</span>
+        </div>
+        <div class="emo-card" style="--accent:#7FD858;">
+            <span class="emo-emoji">🤢</span>
+            <span class="emo-label">Disgust</span>
+        </div>
+        <div class="emo-card" style="--accent:#B78CFF;">
+            <span class="emo-emoji">😨</span>
+            <span class="emo-label">Fear</span>
+        </div>
+        <div class="emo-card emo-featured" style="--accent:#FFD166;">
+            <div class="scan-frame">
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+                <span class="landmark" style="top:22%; left:30%;"></span>
+                <span class="landmark" style="top:22%; left:70%;"></span>
+                <span class="landmark" style="top:55%; left:50%;"></span>
+                <span class="landmark" style="top:78%; left:35%;"></span>
+                <span class="landmark" style="top:78%; left:65%;"></span>
+                <span class="emo-emoji">😊</span>
+            </div>
+            <span class="emo-label">Happy</span>
+        </div>
+        <div class="emo-card" style="--accent:#5EC8E8;">
+            <span class="emo-emoji">😢</span>
+            <span class="emo-label">Sad</span>
+        </div>
+        <div class="emo-card" style="--accent:#FF7FC0;">
+            <span class="emo-emoji">😲</span>
+            <span class="emo-label">Surprise</span>
+        </div>
+        <div class="emo-card" style="--accent:#9AA1B5;">
+            <span class="emo-emoji">😐</span>
+            <span class="emo-label">Neutral</span>
+        </div>
+    </div>
+    ''',
+    unsafe_allow_html=True,
+)
+
 st.markdown('<div class="scan-line"></div>', unsafe_allow_html=True)
 
 # -----------------------------
