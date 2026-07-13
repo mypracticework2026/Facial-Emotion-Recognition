@@ -123,18 +123,60 @@ st.markdown("""
         box-shadow: 0 0 8px 2px rgba(232, 184, 75, 0.6);
     }
 
-    .hero-title {
+    @property --angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
+    }
+    @keyframes rotate-border {
+        to { --angle: 360deg; }
+    }
+
+    .hero-box-wrap {
+        display: flex;
+        justify-content: center;
+        margin: 0 auto 1.8rem auto;
+    }
+
+    .hero-box {
+        position: relative;
+        border-radius: 20px;
+        padding: 3px;
+    }
+    .hero-box::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        padding: 3px;
+        background: conic-gradient(from var(--angle),
+            #2DD4BF, #22C55E, #E8B84B, #FF6B5B, #EC4899, #B78CFF, #2DD4BF);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        animation: rotate-border 5s linear infinite;
+    }
+
+    .hero-box-inner {
+        background: #0A0A0D;
+        border-radius: 18px;
+        padding: 2rem 3.5rem;
         text-align: center;
+    }
+
+    .hero-title {
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 4.4rem;
+        font-size: 5rem;
         font-weight: 700;
         letter-spacing: -1.5px;
-        color: #F3F4F8;
-        margin-bottom: 0.6rem;
-        line-height: 1.05;
+        color: #FAFAFC;
+        line-height: 1.02;
+        margin: 0;
+        white-space: nowrap;
     }
-    @media (max-width: 640px) {
-        .hero-title { font-size: 2.6rem; }
+    @media (max-width: 900px) {
+        .hero-title { font-size: 2.6rem; white-space: normal; }
+        .hero-box-inner { padding: 1.4rem 1.6rem; }
     }
 
     .hero-subtitle {
@@ -448,11 +490,16 @@ st.markdown(
     '<div class="eyebrow"><span class="dot"></span> COMPUTER VISION &middot; BIOMETRIC ANALYSIS ENGINE</div>',
     unsafe_allow_html=True,
 )
-st.markdown('<p class="hero-title">Facial Emotion Detector</p>', unsafe_allow_html=True)
 st.markdown(
-    '<p class="hero-subtitle">Upload a photo and the engine locates the face, '
-    'extracts HOG gradient features, and classifies the expression across '
-    'seven emotional states in real time.</p>',
+    '''
+    <div class="hero-box-wrap">
+        <div class="hero-box">
+            <div class="hero-box-inner">
+                <p class="hero-title">Facial Emotion Detector</p>
+            </div>
+        </div>
+    </div>
+    ''',
     unsafe_allow_html=True,
 )
 
