@@ -132,12 +132,6 @@ st.markdown("""
         to { --angle: 360deg; }
     }
 
-    .hero-box-wrap {
-        display: flex;
-        justify-content: center;
-        margin: 0 auto 1.8rem auto;
-    }
-
     .hero-box {
         position: relative;
         border-radius: 20px;
@@ -160,22 +154,35 @@ st.markdown("""
     .hero-box-inner {
         background: #0A0A0D;
         border-radius: 18px;
-        padding: 2rem 3.5rem;
+        padding: 2.4rem 4.5rem;
         text-align: center;
+        display: inline-block;
     }
 
-    .hero-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 5rem;
-        font-weight: 700;
-        letter-spacing: -1.5px;
-        color: #FAFAFC;
-        line-height: 1.02;
-        margin: 0;
+    .hero-box-wrap {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 1.8rem;
+    }
+
+    .hero-box-inner p.hero-title,
+    div[data-testid="stMarkdownContainer"] p.hero-title {
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 6rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -2px !important;
+        color: #FAFAFC !important;
+        line-height: 1.02 !important;
+        margin: 0 !important;
         white-space: nowrap;
     }
     @media (max-width: 900px) {
-        .hero-title { font-size: 2.6rem; white-space: normal; }
+        .hero-box-inner p.hero-title,
+        div[data-testid="stMarkdownContainer"] p.hero-title {
+            font-size: 2.8rem !important;
+            white-space: normal;
+        }
         .hero-box-inner { padding: 1.4rem 1.6rem; }
     }
 
