@@ -15,21 +15,33 @@ st.set_page_config(
 )
 
 # -----------------------------
-# Per-emotion accent colors (glossy gradients)
+# Per-emotion accent colors (vivid, used on white bg)
 # -----------------------------
 EMOTION_COLORS = {
-    "Angry":    ("#FF5F6D", "#B71C1C"),
-    "Disgust":  ("#8BC34A", "#33691E"),
-    "Fear":     ("#9C27B0", "#4A148C"),
-    "Happy":    ("#FFD200", "#F7971E"),
-    "Sad":      ("#4FACFE", "#00567D"),
-    "Surprise": ("#F953C6", "#B91D73"),
-    "Neutral":  ("#B0BEC5", "#546E7A"),
+    "Angry":    ("#FF5F6D", "#C62828"),
+    "Disgust":  ("#66BB6A", "#2E7D32"),
+    "Fear":     ("#AB47BC", "#6A1B9A"),
+    "Happy":    ("#FFC107", "#FB8C00"),
+    "Sad":      ("#42A5F5", "#1565C0"),
+    "Surprise": ("#EC407A", "#AD1457"),
+    "Neutral":  ("#90A4AE", "#546E7A"),
 }
-DEFAULT_COLOR = ("#8E9AAF", "#4A5568")
+DEFAULT_COLOR = ("#7C83FD", "#5C63C4")
 
 # -----------------------------
-# Custom CSS — glassmorphism + gradients
+# Safe image display helper (works across Streamlit versions)
+# -----------------------------
+def safe_image(img, **kwargs):
+    try:
+        st.image(img, use_container_width=True, **kwargs)
+    except TypeError:
+        try:
+            st.image(img, use_column_width=True, **kwargs)
+        except TypeError:
+            st.image(img, **kwargs)
+
+# -----------------------------
+# Custom CSS — clean white / SaaS-dashboard style
 # -----------------------------
 st.markdown("""
 <style>
@@ -38,7 +50,7 @@ st.markdown("""
     header {visibility: hidden;}
 
     .stApp {
-        background: radial-gradient(circle at 15% 10%, #1c1440 0%, #0a0e27 45%, #05060f 100%);
+        background: #F6F7FB;
     }
 
     .block-container {
@@ -47,53 +59,86 @@ st.markdown("""
     }
 
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #14102b 0%, #0a0e27 100%);
-        border-right: 1px solid rgba(255,255,255,0.06);
+        background: #FFFFFF;
+        border-right: 1px solid #EDEFF5;
     }
 
     .hero-title {
         text-align: center;
-        font-size: 2.9rem;
+        font-size: 2.7rem;
         font-weight: 900;
-        letter-spacing: 0.5px;
-        background: linear-gradient(90deg, #7F5AF0, #2CB67D, #FFD200);
-        background-size: 200% auto;
+        letter-spacing: 0.3px;
+        color: #1F2544;
+        margin-bottom: 0.1rem;
+    }
+    .hero-title span {
+        background: linear-gradient(90deg, #7C83FD, #22C1A0);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.1rem;
-        animation: shine 6s linear infinite;
-    }
-    @keyframes shine {
-        to { background-position: 200% center; }
     }
 
     .hero-subtitle {
         text-align: center;
-        color: #9CA3C2;
-        font-size: 1.05rem;
+        color: #6B7189;
+        font-size: 1.02rem;
         margin-bottom: 2rem;
-        letter-spacing: 0.3px;
     }
 
-    .glass-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-        border: 1px solid rgba(255, 255, 255, 0.10);
-        border-radius: 20px;
-        padding: 1.6rem 1.8rem;
+    .white-card {
+        background: #FFFFFF;
+        border: 1px solid #EDEFF5;
+        border-radius: 18px;
+        padding: 1.5rem 1.7rem;
         height: 100%;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 4px 20px rgba(31, 37, 68, 0.06);
     }
 
     .card-heading {
-        color: #C9CEE8;
-        font-size: 0.8rem;
+        color: #6B7189;
+        font-size: 0.78rem;
         font-weight: 700;
-        letter-spacing: 1.5px;
+        letter-spacing: 1.3px;
         text-transform: uppercase;
         margin-bottom: 0.9rem;
+    }
+
+    .sidebar-box {
+        border-radius: 14px;
+        padding: 0.9rem 1.1rem;
+        margin-bottom: 0.8rem;
+    }
+    .sidebar-box .label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
         opacity: 0.75;
+        margin-bottom: 0.15rem;
+    }
+    .sidebar-box .value {
+        font-size: 1.02rem;
+        font-weight: 700;
+    }
+
+    .box-purple { background: #F1EEFF; }
+    .box-purple .label, .box-purple .value { color: #6C4FD9; }
+
+    .box-blue { background: #E7F3FF; }
+    .box-blue .label, .box-blue .value { color: #1877C9; }
+
+    .box-green { background: #E7FBEF; }
+    .box-green .label, .box-green .value { color: #1E9E5A; }
+
+    .box-peach { background: #FFF1E3; }
+    .box-peach .label, .box-peach .value { color: #D9772E; }
+
+    .note-box {
+        background: #FDF1F7;
+        border-radius: 14px;
+        padding: 0.9rem 1.1rem;
+        color: #B3467C;
+        font-size: 0.82rem;
+        line-height: 1.4;
     }
 
     .result-emoji-wrap {
@@ -101,20 +146,16 @@ st.markdown("""
         margin-bottom: 0.2rem;
     }
     .result-emoji {
-        font-size: 4.5rem;
-        filter: drop-shadow(0 0 25px var(--glow-color, rgba(124,92,240,0.55)));
+        font-size: 4.3rem;
     }
 
     .result-label {
         text-align: center;
-        font-size: 2rem;
+        font-size: 1.9rem;
         font-weight: 800;
-        letter-spacing: 1px;
-        margin-top: 0.2rem;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(90deg, var(--c1, #7F5AF0), var(--c2, #2CB67D));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        letter-spacing: 0.6px;
+        margin-top: 0.15rem;
+        margin-bottom: 1.4rem;
     }
 
     .score-row {
@@ -126,38 +167,36 @@ st.markdown("""
     .score-label {
         width: 78px;
         font-size: 0.85rem;
-        color: #C9CEE8;
-        font-weight: 500;
+        color: #444B6E;
+        font-weight: 600;
     }
     .score-pct {
         width: 40px;
         font-size: 0.8rem;
         color: #8B93B8;
         text-align: right;
-        font-weight: 600;
+        font-weight: 700;
     }
     .bar-track {
         flex: 1;
-        background: rgba(255,255,255,0.06);
+        background: #EEF0F8;
         border-radius: 8px;
         height: 11px;
         overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.05);
     }
     .bar-fill {
         height: 100%;
         border-radius: 8px;
         transition: width 0.6s ease;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3) inset;
     }
 
     .placeholder-box {
-        border: 1px dashed rgba(255,255,255,0.15);
-        border-radius: 20px;
+        border: 1.5px dashed #D8DCEB;
+        border-radius: 18px;
         padding: 3.2rem 1rem;
         text-align: center;
-        color: #6B7394;
-        background: rgba(255,255,255,0.02);
+        color: #9BA1BC;
+        background: #FBFBFE;
     }
 
     .crop-caption {
@@ -168,9 +207,9 @@ st.markdown("""
     }
 
     .warn-banner {
-        background: rgba(255, 190, 60, 0.12);
-        border: 1px solid rgba(255, 190, 60, 0.35);
-        color: #FFD98A;
+        background: #FFF6E5;
+        border: 1px solid #FFE3A3;
+        color: #A9760C;
         border-radius: 12px;
         padding: 0.7rem 1rem;
         font-size: 0.85rem;
@@ -178,9 +217,9 @@ st.markdown("""
     }
 
     .ok-banner {
-        background: rgba(44, 182, 125, 0.12);
-        border: 1px solid rgba(44, 182, 125, 0.35);
-        color: #8FE3BE;
+        background: #E9FBF1;
+        border: 1px solid #B9EFD1;
+        color: #1E9E5A;
         border-radius: 12px;
         padding: 0.6rem 1rem;
         font-size: 0.82rem;
@@ -188,15 +227,10 @@ st.markdown("""
     }
 
     div[data-testid="stFileUploader"] {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.10);
+        background: #FFFFFF;
+        border: 1.5px dashed #D8DCEB;
         border-radius: 16px;
         padding: 0.6rem;
-    }
-
-    [data-testid="stSidebar"] .stAlert {
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.08);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -204,25 +238,43 @@ st.markdown("""
 # -----------------------------
 # Header
 # -----------------------------
-st.markdown('<p class="hero-title">✨ Facial Emotion Recognition AI</p>', unsafe_allow_html=True)
+st.markdown('<p class="hero-title">✨ <span>Facial Emotion Recognition AI</span></p>', unsafe_allow_html=True)
 st.markdown('<p class="hero-subtitle">Powered by Machine Learning &middot; HOG Features + Linear SVM</p>', unsafe_allow_html=True)
 
 # -----------------------------
-# Sidebar
+# Sidebar — each box a distinct pastel shade
 # -----------------------------
 with st.sidebar:
     st.markdown("## 📊 Model Information")
-    st.success("**Algorithm**\n\nLinear SVM")
-    st.success("**Feature Extraction**\n\nHOG (Histogram of Oriented Gradients)")
-    st.success("**Dataset**\n\nFER2013")
-    st.success("**Accuracy**\n\n~43% (7-class)")
+
+    st.markdown(
+        '<div class="sidebar-box box-purple"><div class="label">Algorithm</div>'
+        '<div class="value">Linear SVM</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="sidebar-box box-blue"><div class="label">Feature Extraction</div>'
+        '<div class="value">HOG (Histogram of Oriented Gradients)</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="sidebar-box box-green"><div class="label">Dataset</div>'
+        '<div class="value">FER2013</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="sidebar-box box-peach"><div class="label">Accuracy</div>'
+        '<div class="value">~43% (7-class)</div></div>',
+        unsafe_allow_html=True,
+    )
+
     st.markdown("---")
-    st.info("Built with Python, OpenCV, scikit-image, scikit-learn and Streamlit.")
-    st.caption(
-        "FER2013 is a genuinely hard benchmark — even human raters agree "
-        "on labels only ~65-70% of the time. This classical HOG + linear "
-        "SVM pipeline is a lightweight baseline, not a CNN, so treat "
-        "results as indicative rather than exact."
+    st.markdown(
+        '<div class="note-box">FER2013 is a genuinely hard benchmark — even '
+        'human raters agree on labels only ~65-70% of the time. This classical '
+        'HOG + linear SVM pipeline is a lightweight baseline, not a CNN, so '
+        'treat results as indicative rather than exact.</div>',
+        unsafe_allow_html=True,
     )
 
 # -----------------------------
@@ -234,19 +286,31 @@ uploaded_file = st.file_uploader(
 )
 
 col_img, col_result = st.columns([1, 1], gap="large")
+result = None
 
 if uploaded_file is not None:
+    # --- Step 1: read + display the uploaded image ---
     try:
         pil_image = Image.open(uploaded_file).convert("RGB")
         image_np = np.array(pil_image)
         image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
         with col_img:
-            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.markdown('<div class="white-card">', unsafe_allow_html=True)
             st.markdown('<p class="card-heading">Uploaded Image</p>', unsafe_allow_html=True)
-            st.image(pil_image, use_container_width=True)
+            safe_image(pil_image)
             st.markdown('</div>', unsafe_allow_html=True)
 
+        read_ok = True
+    except Exception as e:
+        read_ok = False
+        with col_img:
+            st.error("Couldn't read this image file. Please try a different one.")
+            with st.expander("Technical details"):
+                st.code(str(e))
+
+    # --- Step 2: run prediction (isolated so it can't take down the page) ---
+    if read_ok:
         with col_result:
             with st.spinner("Analyzing facial expression..."):
                 try:
@@ -263,7 +327,7 @@ if uploaded_file is not None:
             if result:
                 c1, c2 = EMOTION_COLORS.get(result["emotion"], DEFAULT_COLOR)
 
-                st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+                st.markdown('<div class="white-card">', unsafe_allow_html=True)
                 st.markdown('<p class="card-heading">Prediction</p>', unsafe_allow_html=True)
 
                 if not result["face_found"]:
@@ -275,18 +339,17 @@ if uploaded_file is not None:
                     )
                 else:
                     st.markdown(
-                        '<div class="ok-banner">✅ Face detected and cropped automatically '
-                        'before scoring.</div>',
+                        '<div class="ok-banner">✅ Face detected and cropped '
+                        'automatically before scoring.</div>',
                         unsafe_allow_html=True,
                     )
 
                 st.markdown(
-                    f'<div class="result-emoji-wrap" style="--glow-color:{c1}66;">'
-                    f'<span class="result-emoji">{result["emoji"]}</span></div>',
+                    f'<div class="result-emoji-wrap"><span class="result-emoji">{result["emoji"]}</span></div>',
                     unsafe_allow_html=True,
                 )
                 st.markdown(
-                    f'<p class="result-label" style="--c1:{c1};--c2:{c2};">{result["emotion"].upper()}</p>',
+                    f'<p class="result-label" style="color:{c2};">{result["emotion"].upper()}</p>',
                     unsafe_allow_html=True,
                 )
 
@@ -295,7 +358,7 @@ if uploaded_file is not None:
                         result["scores"].items(), key=lambda x: x[1], reverse=True
                     )
                     for label, score in sorted_scores:
-                        pct = max(0, min(100, round(score * 100)))
+                        pct = max(0, min(100, round(float(score) * 100)))
                         bc1, bc2 = EMOTION_COLORS.get(label, DEFAULT_COLOR)
                         st.markdown(
                             f'''
@@ -314,21 +377,21 @@ if uploaded_file is not None:
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
-        # Show what the model actually scored, for transparency/debugging
+        # --- Step 3: optional debug preview, fully isolated ---
         if result and result.get("face_crop_bgr") is not None:
-            crop_rgb = cv2.cvtColor(result["face_crop_bgr"], cv2.COLOR_BGR2RGB)
-            with st.expander("🔍 See exactly what the model scored (the cropped input)"):
-                st.image(crop_rgb, width=200)
-                st.markdown(
-                    '<p class="crop-caption">This 48×48 grayscale crop — not the full '
-                    'photo — is what was fed into the model.</p>',
-                    unsafe_allow_html=True,
-                )
-
-    except Exception as e:
-        st.error("Something went wrong while reading this image. Please try a different file.")
-        with st.expander("Technical details"):
-            st.code(str(e))
+            try:
+                crop = result["face_crop_bgr"]
+                if crop.size > 0:
+                    crop_rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+                    with st.expander("🔍 See exactly what the model scored (the cropped input)"):
+                        st.image(crop_rgb, width=200)
+                        st.markdown(
+                            '<p class="crop-caption">This is the crop — not the full '
+                            'photo — that was fed into the model.</p>',
+                            unsafe_allow_html=True,
+                        )
+            except Exception:
+                pass  # purely cosmetic; never let this break the page
 
 else:
     with col_img:
