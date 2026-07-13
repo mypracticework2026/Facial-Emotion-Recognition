@@ -90,7 +90,7 @@ st.markdown("""
 
     .block-container {
         padding-top: 2.2rem;
-        max-width: 1200px;
+        max-width: 1180px;
     }
 
     section[data-testid="stSidebar"] {
