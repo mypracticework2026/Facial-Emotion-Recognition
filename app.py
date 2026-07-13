@@ -61,6 +61,19 @@ st.markdown("""
             radial-gradient(circle at 95% 15%, rgba(45, 212, 191, 0.05) 0%, transparent 40%);
     }
 
+header[data-testid="stHeader"] {             ← paste starts here
+        background: #0A0A0D;
+    }
+
+    header[data-testid="stHeader"] svg {
+        fill: #C4C7D4;
+    }
+
+    [data-testid="stDecoration"] {
+        background: #0A0A0D;
+    }                          
+
+
     .block-container {
         padding-top: 2.2rem;
         max-width: 1180px;
