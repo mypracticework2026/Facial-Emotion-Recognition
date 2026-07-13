@@ -1,0 +1,220 @@
+import streamlit as st
+import cv2
+import numpy as np
+from PIL import Image
+from predict import predict_emotion
+
+# -----------------------------
+# Page Configuration
+# -----------------------------
+st.set_page_config(
+    page_title="Facial Emotion Recognition",
+    page_icon="😊",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# -----------------------------
+# Custom CSS
+# -----------------------------
+st.markdown("""
+<style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    .block-container {
+        padding-top: 2.5rem;
+        max-width: 1100px;
+    }
+
+    .hero-title {
+        text-align: center;
+        font-size: 2.6rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #6C5CE7, #00E676);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.2rem;
+    }
+
+    .hero-subtitle {
+        text-align: center;
+        color: #9AA0A6;
+        font-size: 1.05rem;
+        margin-bottom: 1.8rem;
+    }
+
+    .card {
+        background: #161B22;
+        border: 1px solid #2A2F3A;
+        border-radius: 16px;
+        padding: 1.4rem 1.6rem;
+        height: 100%;
+    }
+
+    .result-emoji {
+        font-size: 4rem;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .result-label {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #00E676;
+        margin-top: -0.3rem;
+        margin-bottom: 1.2rem;
+        letter-spacing: 0.5px;
+    }
+
+    .score-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .score-label {
+        width: 85px;
+        font-size: 0.85rem;
+        color: #C9CDD3;
+    }
+
+    .score-pct {
+        width: 42px;
+        font-size: 0.8rem;
+        color: #9AA0A6;
+        text-align: right;
+    }
+
+    .bar-track {
+        flex: 1;
+        background: #2A2F3A;
+        border-radius: 6px;
+        height: 10px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        border-radius: 6px;
+        background: linear-gradient(90deg, #6C5CE7, #00E676);
+    }
+
+    .placeholder-box {
+        border: 1px dashed #3A404C;
+        border-radius: 16px;
+        padding: 3rem 1rem;
+        text-align: center;
+        color: #6B7280;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# -----------------------------
+# Header
+# -----------------------------
+st.markdown('<p class="hero-title">😊 Facial Emotion Recognition AI</p>', unsafe_allow_html=True)
+st.markdown('<p class="hero-subtitle">Powered by Machine Learning · HOG Features + Linear SVM</p>', unsafe_allow_html=True)
+
+# -----------------------------
+# Sidebar
+# -----------------------------
+with st.sidebar:
+    st.markdown("## 📊 Model Information")
+    st.success("**Algorithm**\n\nLinear SVM")
+    st.success("**Feature Extraction**\n\nHOG (Histogram of Oriented Gradients)")
+    st.success("**Dataset**\n\nFER2013")
+    st.success("**Accuracy**\n\n~43% (7-class)")
+    st.markdown("---")
+    st.info(
+        "Built with Python, OpenCV, scikit-image, "
+        "scikit-learn and Streamlit."
+    )
+    st.caption(
+        "Note: FER2013 is a genuinely hard benchmark — even human "
+        "raters agree on labels only ~65-70% of the time. HOG + "
+        "linear SVM is a lightweight classical baseline, not a CNN."
+    )
+
+# -----------------------------
+# Upload + Layout
+# -----------------------------
+uploaded_file = st.file_uploader(
+    "📤 Upload a face image (JPG / PNG)",
+    type=["jpg", "jpeg", "png"],
+)
+
+col_img, col_result = st.columns([1, 1], gap="large")
+
+if uploaded_file is not None:
+    try:
+        # Normalize to RGB first so grayscale / RGBA uploads don't break
+        # the downstream color conversion.
+        pil_image = Image.open(uploaded_file).convert("RGB")
+        image_np = np.array(pil_image)
+        image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+
+        with col_img:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.image(pil_image, caption="Uploaded Image", use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with col_result:
+            with st.spinner("Analyzing facial expression..."):
+                try:
+                    result = predict_emotion(image_bgr)
+                except Exception as e:
+                    result = None
+                    st.error(
+                        "Couldn't analyze this image. Try a clearer, "
+                        "front-facing photo with the face centered."
+                    )
+                    with st.expander("Technical details"):
+                        st.code(str(e))
+
+            if result:
+                st.markdown('<div class="card">', unsafe_allow_html=True)
+                st.markdown(f'<p class="result-emoji">{result["emoji"]}</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="result-label">{result["emotion"].upper()}</p>', unsafe_allow_html=True)
+
+                if result["scores"]:
+                    sorted_scores = sorted(
+                        result["scores"].items(), key=lambda x: x[1], reverse=True
+                    )
+                    for label, score in sorted_scores:
+                        pct = max(0, min(100, round(score * 100)))
+                        st.markdown(
+                            f'''
+                            <div class="score-row">
+                                <div class="score-label">{label}</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="width:{pct}%;"></div>
+                                </div>
+                                <div class="score-pct">{pct}%</div>
+                            </div>
+                            ''',
+                            unsafe_allow_html=True,
+                        )
+                else:
+                    st.caption("Confidence breakdown unavailable for this model type.")
+
+                st.markdown('</div>', unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error("Something went wrong while reading this image. Please try a different file.")
+        with st.expander("Technical details"):
+            st.code(str(e))
+
+else:
+    with col_img:
+        st.markdown(
+            '<div class="placeholder-box">🖼️<br><br>Your uploaded photo will appear here</div>',
+            unsafe_allow_html=True,
+        )
+    with col_result:
+        st.markdown(
+            '<div class="placeholder-box">📈<br><br>Prediction and confidence scores will appear here</div>',
+            unsafe_allow_html=True,
+        )
